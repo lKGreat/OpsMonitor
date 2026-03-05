@@ -1,0 +1,127 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using OpsMonitor.Api.HostedServices;
+using OpsMonitor.Api.Infrastructure;
+using OpsMonitor.Api.Middleware;
+using OpsMonitor.Api.Options;
+using OpsMonitor.Api.Security;
+using OpsMonitor.Api.Services;
+using SqlSugar;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
+builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection("Seed"));
+builder.Services.Configure<MonitoringOptions>(builder.Configuration.GetSection("Monitoring"));
+
+builder.Services.AddSingleton<ISqlSugarClient>(_ =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("Default")
+                           ?? "Data Source=opsmonitor.db";
+    return new SqlSugarClient(new ConnectionConfig
+    {
+        ConnectionString = connectionString,
+        DbType = DbType.Sqlite,
+        IsAutoCloseConnection = true,
+        InitKeyType = InitKeyType.Attribute
+    });
+});
+
+var jwt = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
+var key = Encoding.UTF8.GetBytes(jwt.SigningKey.PadRight(32, '0')[..32]);
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuer = jwt.Issuer,
+            ValidAudience = jwt.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(key),
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddHttpClient("probe");
+builder.Services.AddHttpClient<IDingTalkNotifier, DingTalkNotifier>();
+
+builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IConfigEncryptionService, ConfigEncryptionService>();
+builder.Services.AddScoped<IDbBootstrapper, DbBootstrapper>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IMonitorService, MonitorService>();
+builder.Services.AddScoped<IChannelService, ChannelService>();
+builder.Services.AddScoped<IProbeService, ProbeService>();
+builder.Services.AddScoped<IAlertEngineService, AlertEngineService>();
+builder.Services.AddScoped<IAlertQueryService, AlertQueryService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddSingleton<IProbeDispatchQueue, ProbeDispatchQueue>();
+
+builder.Services.AddHostedService<SchedulerHostedService>();
+builder.Services.AddHostedService<ProbeWorkerHostedService>();
+builder.Services.AddHostedService<RetentionHostedService>();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "OpsMonitor API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Input: Bearer {token}"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var bootstrapper = scope.ServiceProvider.GetRequiredService<IDbBootstrapper>();
+    await bootstrapper.InitializeAsync();
+}
+
+app.UseMiddleware<ApiExceptionMiddleware>();
+app.UseMiddleware<AuditMiddleware>();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
+app.MapFallbackToFile("index.html");
+
+app.Run();
