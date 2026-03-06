@@ -19,6 +19,7 @@
             <th>Severity</th>
             <th>State</th>
             <th>Message</th>
+            <th>AckNote</th>
             <th>First</th>
             <th>Last</th>
             <th>Action</th>
@@ -32,9 +33,13 @@
             <td>{{ a.severity }}</td>
             <td>{{ a.state }}</td>
             <td>{{ a.message }}</td>
+            <td>{{ a.ackNote || '-' }}</td>
             <td>{{ a.firstTriggeredAt }}</td>
             <td>{{ a.lastTriggeredAt }}</td>
-            <td><button @click="ack(a.id)">Ack</button></td>
+            <td class="row">
+              <input v-model="ackNotes[a.id]" placeholder="备注" style="min-width: 120px;" />
+              <button @click="ack(a.id)">Ack</button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -48,6 +53,7 @@ import { apiGet, apiPost } from '../api';
 
 const state = ref('');
 const alerts = ref<any[]>([]);
+const ackNotes = ref<Record<number, string>>({});
 
 async function load() {
   const query = state.value ? `?state=${state.value}` : '';
@@ -55,7 +61,8 @@ async function load() {
 }
 
 async function ack(id: number) {
-  await apiPost(`/api/alerts/${id}/ack`, { note: '' });
+  await apiPost(`/api/alerts/${id}/ack`, { note: ackNotes.value[id] || '' });
+  ackNotes.value[id] = '';
   await load();
 }
 

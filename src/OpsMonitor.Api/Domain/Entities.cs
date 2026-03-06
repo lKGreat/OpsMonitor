@@ -5,7 +5,7 @@ namespace OpsMonitor.Api.Domain;
 [SugarTable("sys_user")]
 public class SysUser
 {
-    [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
+    [SugarColumn(IsPrimaryKey = true, IsIdentity = true, ColumnDataType = "INTEGER")]
     public long Id { get; set; }
     [SugarColumn(Length = 64, IsNullable = false)]
     public string UserName { get; set; } = string.Empty;
@@ -27,13 +27,14 @@ public class SysUser
     public DateTime CreatedAt { get; set; }
     [SugarColumn(IsNullable = false)]
     public DateTime UpdatedAt { get; set; }
+    [SugarColumn(IsNullable = true)]
     public DateTime? LastLoginAt { get; set; }
 }
 
 [SugarTable("sys_audit_log")]
 public class SysAuditLog
 {
-    [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
+    [SugarColumn(IsPrimaryKey = true, IsIdentity = true, ColumnDataType = "INTEGER")]
     public long Id { get; set; }
     [SugarColumn(IsNullable = false)]
     public DateTime CreatedAt { get; set; }
@@ -54,7 +55,7 @@ public class SysAuditLog
 [SugarTable("mon_monitor")]
 public class MonMonitor
 {
-    [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
+    [SugarColumn(IsPrimaryKey = true, IsIdentity = true, ColumnDataType = "INTEGER")]
     public long Id { get; set; }
     [SugarColumn(Length = 128, IsNullable = false)]
     public string Name { get; set; } = string.Empty;
@@ -77,7 +78,7 @@ public class MonMonitor
 [SugarTable("mon_target")]
 public class MonTarget
 {
-    [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
+    [SugarColumn(IsPrimaryKey = true, IsIdentity = true, ColumnDataType = "INTEGER")]
     public long Id { get; set; }
     [SugarColumn(IsNullable = false)]
     public long MonitorId { get; set; }
@@ -110,6 +111,7 @@ public class MonPolicy
     public string SuccessCodeRule { get; set; } = "200-399";
     [SugarColumn(Length = 200, IsNullable = true)]
     public string? ContentContains { get; set; }
+    [SugarColumn(IsNullable = true)]
     public int? LatencyMsThreshold { get; set; }
     [SugarColumn(ColumnDataType = "TEXT", IsNullable = true)]
     public string? CertExpireDaysThresholdsJson { get; set; }
@@ -120,7 +122,7 @@ public class MonPolicy
 [SugarTable("mon_check_result")]
 public class MonCheckResult
 {
-    [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
+    [SugarColumn(IsPrimaryKey = true, IsIdentity = true, ColumnDataType = "INTEGER")]
     public long Id { get; set; }
     [SugarColumn(IsNullable = false)]
     public long MonitorId { get; set; }
@@ -134,8 +136,11 @@ public class MonCheckResult
     public string ErrorType { get; set; } = Domain.ErrorType.None;
     [SugarColumn(Length = 500, IsNullable = true)]
     public string? ErrorMessage { get; set; }
+    [SugarColumn(IsNullable = true)]
     public int? HttpStatusCode { get; set; }
+    [SugarColumn(IsNullable = true)]
     public DateTime? CertNotAfter { get; set; }
+    [SugarColumn(IsNullable = true)]
     public int? CertDaysLeft { get; set; }
     [SugarColumn(Length = 200, IsNullable = true)]
     public string? CertIssuer { get; set; }
@@ -150,7 +155,7 @@ public class MonCheckResult
 [SugarTable("alert_event")]
 public class AlertEvent
 {
-    [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
+    [SugarColumn(IsPrimaryKey = true, IsIdentity = true, ColumnDataType = "INTEGER")]
     public long Id { get; set; }
     [SugarColumn(IsNullable = false)]
     public long MonitorId { get; set; }
@@ -164,21 +169,26 @@ public class AlertEvent
     public DateTime FirstTriggeredAt { get; set; }
     [SugarColumn(IsNullable = false)]
     public DateTime LastTriggeredAt { get; set; }
+    [SugarColumn(IsNullable = true)]
     public DateTime? ResolvedAt { get; set; }
     [SugarColumn(Length = 500, IsNullable = false)]
     public string Message { get; set; } = string.Empty;
     [SugarColumn(Length = 128, IsNullable = false)]
     public string DedupKey { get; set; } = string.Empty;
+    [SugarColumn(IsNullable = true)]
     public DateTime? SilencedUntil { get; set; }
+    [SugarColumn(IsNullable = true)]
     public DateTime? AckedAt { get; set; }
     [SugarColumn(Length = 64, IsNullable = true)]
     public string? AckedBy { get; set; }
+    [SugarColumn(Length = 500, IsNullable = true)]
+    public string? AckNote { get; set; }
 }
 
 [SugarTable("notify_channel")]
 public class NotifyChannel
 {
-    [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
+    [SugarColumn(IsPrimaryKey = true, IsIdentity = true, ColumnDataType = "INTEGER")]
     public long Id { get; set; }
     [SugarColumn(Length = 16, IsNullable = false)]
     public string Type { get; set; } = ChannelType.DingTalk;
@@ -193,7 +203,7 @@ public class NotifyChannel
 [SugarTable("notify_log")]
 public class NotifyLog
 {
-    [SugarColumn(IsPrimaryKey = true, IsIdentity = true)]
+    [SugarColumn(IsPrimaryKey = true, IsIdentity = true, ColumnDataType = "INTEGER")]
     public long Id { get; set; }
     [SugarColumn(IsNullable = false)]
     public long AlertEventId { get; set; }

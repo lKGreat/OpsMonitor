@@ -27,7 +27,7 @@ public class AlertsController : ControllerBase
     [HttpPost("{id:long}/ack")]
     public async Task<ActionResult> Ack(long id, [FromBody] AckAlertRequest request, CancellationToken ct)
     {
-        var ok = await _alertQueryService.AckAsync(id, User.GetUserName(), ct);
+        var ok = await _alertQueryService.AckAsync(id, User.GetUserName(), request.Note, ct);
         return ok ? Ok() : NotFound();
     }
 }

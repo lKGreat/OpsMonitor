@@ -25,3 +25,7 @@ public record UpdateUserRequest(
     string Role,
     bool IsEnabled,
     string? NewPassword);
+
+public record ChangePasswordRequest(
+    string CurrentPassword,
+    string NewPassword);

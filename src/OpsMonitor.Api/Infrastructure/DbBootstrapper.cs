@@ -46,6 +46,7 @@ public class DbBootstrapper : IDbBootstrapper
         await _db.Ado.ExecuteCommandAsync("CREATE UNIQUE INDEX IF NOT EXISTS idx_sys_user_username ON sys_user(UserName);");
         await _db.Ado.ExecuteCommandAsync("CREATE INDEX IF NOT EXISTS idx_result_monitor_checkedat ON mon_check_result(MonitorId, CheckedAt);");
         await _db.Ado.ExecuteCommandAsync("CREATE INDEX IF NOT EXISTS idx_alert_dedup_state ON alert_event(DedupKey, State);");
+        await EnsureColumnAsync("alert_event", "AckNote", "TEXT NULL");
 
         var admin = await _db.Queryable<SysUser>()
             .Where(x => x.UserName == _seedOptions.AdminUserName)
@@ -69,7 +70,26 @@ public class DbBootstrapper : IDbBootstrapper
             IsEnabled = true,
             RequirePasswordChange = true,
             CreatedAt = now,
-            UpdatedAt = now
+            UpdatedAt = now,
+            LastLoginAt = now
         }).ExecuteCommandAsync();
+    }
+
+    private async Task EnsureColumnAsync(string table, string column, string columnType)
+    {
+        var exists = await _db.Ado.SqlQueryAsync<SqliteColumnInfo>($"PRAGMA table_info({table});");
+        if (exists.Any(x => x.name.Equals(column, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        await _db.Ado.ExecuteCommandAsync($"ALTER TABLE {table} ADD COLUMN {column} {columnType};");
+    }
+
+    private class SqliteColumnInfo
+    {
+        public int cid { get; set; }
+        public string name { get; set; } = string.Empty;
+        public string type { get; set; } = string.Empty;
     }
 }

@@ -119,9 +119,14 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseAuthentication();
+app.UseMiddleware<RequirePasswordChangeMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 
 app.Run();
+
+public partial class Program
+{
+}

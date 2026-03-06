@@ -1,4 +1,5 @@
 using OpsMonitor.Api.Services;
+using Xunit;
 
 namespace OpsMonitor.Tests;
 

@@ -37,7 +37,7 @@ async function submit() {
     const response = await apiPost<{ accessToken: string; expiresAt: string; user: any }>('/api/auth/login', form);
     authStore.token = response.accessToken;
     authStore.user = response.user;
-    router.push('/dashboard');
+    router.push(response.user?.requirePasswordChange ? '/change-password' : '/dashboard');
   } catch (e: any) {
     error.value = e.message;
   } finally {

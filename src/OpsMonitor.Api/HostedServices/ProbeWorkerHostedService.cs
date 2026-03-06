@@ -6,23 +6,17 @@ namespace OpsMonitor.Api.HostedServices;
 
 public class ProbeWorkerHostedService : BackgroundService
 {
-    private readonly ISqlSugarClient _db;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly IProbeDispatchQueue _queue;
-    private readonly IProbeService _probeService;
-    private readonly IAlertEngineService _alertEngineService;
     private readonly ILogger<ProbeWorkerHostedService> _logger;
 
     public ProbeWorkerHostedService(
-        ISqlSugarClient db,
+        IServiceScopeFactory scopeFactory,
         IProbeDispatchQueue queue,
-        IProbeService probeService,
-        IAlertEngineService alertEngineService,
         ILogger<ProbeWorkerHostedService> logger)
     {
-        _db = db;
+        _scopeFactory = scopeFactory;
         _queue = queue;
-        _probeService = probeService;
-        _alertEngineService = alertEngineService;
         _logger = logger;
     }
 
@@ -44,14 +38,19 @@ public class ProbeWorkerHostedService : BackgroundService
 
     private async Task HandleAsync(long monitorId, CancellationToken ct)
     {
-        var monitor = await _db.Queryable<MonMonitor>().InSingleAsync(monitorId);
+        using var scope = _scopeFactory.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ISqlSugarClient>();
+        var probeService = scope.ServiceProvider.GetRequiredService<IProbeService>();
+        var alertEngineService = scope.ServiceProvider.GetRequiredService<IAlertEngineService>();
+
+        var monitor = await db.Queryable<MonMonitor>().InSingleAsync(monitorId);
         if (monitor is null || !monitor.IsEnabled)
         {
             return;
         }
 
-        var target = await _db.Queryable<MonTarget>().FirstAsync(x => x.MonitorId == monitorId);
-        var policy = await _db.Queryable<MonPolicy>().InSingleAsync(monitorId);
+        var target = await db.Queryable<MonTarget>().FirstAsync(x => x.MonitorId == monitorId);
+        var policy = await db.Queryable<MonPolicy>().InSingleAsync(monitorId);
         if (target is null || policy is null)
         {
             return;
@@ -62,8 +61,8 @@ public class ProbeWorkerHostedService : BackgroundService
         for (var attempt = 0; attempt <= retries; attempt++)
         {
             finalOutcome = monitor.Type == MonitorType.Cert
-                ? await _probeService.RunCertProbeAsync(target, policy, ct)
-                : await _probeService.RunLinkProbeAsync(target, policy, ct);
+                ? await probeService.RunCertProbeAsync(target, policy, ct)
+                : await probeService.RunLinkProbeAsync(target, policy, ct);
 
             if (finalOutcome.IsSuccess || attempt == retries)
             {
@@ -93,8 +92,8 @@ public class ProbeWorkerHostedService : BackgroundService
             CertFingerprint = finalOutcome.CertFingerprint,
             RawJson = finalOutcome.RawJson
         };
-        result.Id = await _db.Insertable(result).ExecuteReturnIdentityAsync();
+        result.Id = await db.Insertable(result).ExecuteReturnIdentityAsync();
 
-        await _alertEngineService.ProcessAsync(monitor, policy, result, ct);
+        await alertEngineService.ProcessAsync(monitor, policy, result, ct);
     }
 }

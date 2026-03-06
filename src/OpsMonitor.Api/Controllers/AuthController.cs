@@ -47,4 +47,16 @@ public class AuthController : ControllerBase
         }
         return Ok(me);
     }
+
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<ActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken ct)
+    {
+        var ok = await _authService.ChangePasswordAsync(User.GetUserId(), request, ct);
+        if (!ok)
+        {
+            return BadRequest(new { message = "Current password is incorrect." });
+        }
+        return Ok(new { message = "Password changed." });
+    }
 }

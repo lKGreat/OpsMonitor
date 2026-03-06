@@ -27,6 +27,7 @@
             <td>{{ m.lastIsSuccess === null ? '-' : (m.lastIsSuccess ? 'OK' : 'FAIL') }}</td>
             <td>{{ m.lastCheckedAt || '-' }}</td>
             <td class="row">
+              <RouterLink :to="`/monitors/${m.id}/edit`"><button>编辑</button></RouterLink>
               <button v-if="!m.isEnabled" @click="toggle(m.id, true)">启用</button>
               <button v-else class="danger" @click="toggle(m.id, false)">停用</button>
             </td>

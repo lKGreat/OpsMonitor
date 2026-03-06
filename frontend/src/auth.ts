@@ -21,6 +21,10 @@ export function isAdmin(): boolean {
   return authStore.user?.role === 'Admin';
 }
 
+export function requiresPasswordChange(): boolean {
+  return !!authStore.user?.requirePasswordChange;
+}
+
 export function logout() {
   authStore.token = '';
   authStore.user = null;

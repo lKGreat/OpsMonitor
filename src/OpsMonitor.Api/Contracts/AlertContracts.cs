@@ -11,6 +11,7 @@ public record AlertDto(
     DateTime? ResolvedAt,
     string Message,
     DateTime? AckedAt,
-    string? AckedBy);
+    string? AckedBy,
+    string? AckNote);
 
 public record AckAlertRequest(string? Note);

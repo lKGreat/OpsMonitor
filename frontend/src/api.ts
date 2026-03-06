@@ -23,6 +23,13 @@ async function request<T>(url: string, init: RequestInit): Promise<T> {
   }
 
   const response = await fetch(url, { ...init, headers });
+  if (response.status === 403) {
+    const body = await response.text();
+    if (body.includes('PASSWORD_CHANGE_REQUIRED')) {
+      window.location.href = '/change-password';
+      throw new Error('Password change required');
+    }
+  }
   if (response.status === 401) {
     logout();
     window.location.href = '/login';
@@ -32,5 +39,13 @@ async function request<T>(url: string, init: RequestInit): Promise<T> {
     const text = await response.text();
     throw new Error(text || `Request failed: ${response.status}`);
   }
-  return (await response.json()) as T;
+  const text = await response.text();
+  if (!text) {
+    return undefined as T;
+  }
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return text as T;
+  }
 }

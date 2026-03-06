@@ -10,6 +10,7 @@ public interface IAuthService
 {
     Task<LoginResponse?> LoginAsync(LoginRequest request, CancellationToken ct = default);
     Task<UserInfoDto?> GetMeAsync(long userId, CancellationToken ct = default);
+    Task<bool> ChangePasswordAsync(long userId, ChangePasswordRequest request, CancellationToken ct = default);
 }
 
 public class AuthService : IAuthService
@@ -73,6 +74,39 @@ public class AuthService : IAuthService
             return null;
         }
         return new UserInfoDto(user.Id, user.UserName, user.DisplayName, user.Role, user.RequirePasswordChange);
+    }
+
+    public async Task<bool> ChangePasswordAsync(long userId, ChangePasswordRequest request, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.NewPassword) || request.NewPassword.Length < 8)
+        {
+            throw new ArgumentException("New password must be at least 8 characters.");
+        }
+
+        var user = await _db.Queryable<SysUser>().InSingleAsync(userId);
+        if (user is null || !user.IsEnabled)
+        {
+            return false;
+        }
+
+        var ok = _passwordHasher.Verify(
+            request.CurrentPassword,
+            user.PasswordHash,
+            user.PasswordSalt,
+            user.PwdIterations);
+        if (!ok)
+        {
+            return false;
+        }
+
+        var hashed = _passwordHasher.HashPassword(request.NewPassword);
+        user.PasswordHash = hashed.Hash;
+        user.PasswordSalt = hashed.Salt;
+        user.PwdIterations = hashed.Iterations;
+        user.RequirePasswordChange = false;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _db.Updateable(user).ExecuteCommandAsync();
+        return true;
     }
 
     private static void RegisterFailure(string key)

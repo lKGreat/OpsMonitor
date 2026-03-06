@@ -7,7 +7,7 @@ namespace OpsMonitor.Api.Services;
 public interface IAlertQueryService
 {
     Task<List<AlertDto>> QueryAsync(string? state, CancellationToken ct = default);
-    Task<bool> AckAsync(long id, string userName, CancellationToken ct = default);
+    Task<bool> AckAsync(long id, string userName, string? note, CancellationToken ct = default);
 }
 
 public class AlertQueryService : IAlertQueryService
@@ -39,10 +39,11 @@ public class AlertQueryService : IAlertQueryService
             x.ResolvedAt,
             x.Message,
             x.AckedAt,
-            x.AckedBy)).ToList();
+            x.AckedBy,
+            x.AckNote)).ToList();
     }
 
-    public async Task<bool> AckAsync(long id, string userName, CancellationToken ct = default)
+    public async Task<bool> AckAsync(long id, string userName, string? note, CancellationToken ct = default)
     {
         var eventRow = await _db.Queryable<AlertEvent>().InSingleAsync(id);
         if (eventRow is null)
@@ -51,6 +52,7 @@ public class AlertQueryService : IAlertQueryService
         }
         eventRow.AckedAt = DateTime.UtcNow;
         eventRow.AckedBy = userName;
+        eventRow.AckNote = string.IsNullOrWhiteSpace(note) ? null : note.Trim();
         await _db.Updateable(eventRow).ExecuteCommandAsync();
         return true;
     }

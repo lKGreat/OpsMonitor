@@ -2,6 +2,7 @@
   <div class="stack">
     <div class="row">
       <h2>监控详情 #{{ monitor?.id }}</h2>
+      <RouterLink v-if="monitor" :to="`/monitors/${monitor.id}/edit`"><button>编辑</button></RouterLink>
       <button @click="load">刷新</button>
     </div>
     <div class="card" v-if="monitor">
@@ -40,7 +41,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 import { apiGet } from '../api';
 
 const route = useRoute();
