@@ -32,5 +32,15 @@ async function request<T>(url: string, init: RequestInit): Promise<T> {
     const text = await response.text();
     throw new Error(text || `Request failed: ${response.status}`);
   }
-  return (await response.json()) as T;
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const responseText = await response.text();
+  if (!responseText.trim()) {
+    return undefined as T;
+  }
+
+  return JSON.parse(responseText) as T;
 }
