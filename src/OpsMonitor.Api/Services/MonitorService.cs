@@ -99,7 +99,7 @@ public class MonitorService : IMonitorService
                 FailThreshold = policy.FailThreshold,
                 SuccessCodeRule = policy.SuccessCodeRule,
                 ContentContains = policy.ContentContains,
-                LatencyMsThreshold = policy.LatencyMsThreshold,
+                LatencyMsThreshold = policy.LatencyMsThreshold <= 0 ? null : policy.LatencyMsThreshold,
                 CertExpireDaysThresholdsJson = policy.CertExpireDaysThresholdsJson,
                 ChannelIdsJson = policy.ChannelIdsJson
             });
@@ -141,7 +141,7 @@ public class MonitorService : IMonitorService
             FailThreshold = dto.Policy.FailThreshold,
             SuccessCodeRule = dto.Policy.SuccessCodeRule,
             ContentContains = dto.Policy.ContentContains,
-            LatencyMsThreshold = dto.Policy.LatencyMsThreshold,
+            LatencyMsThreshold = dto.Policy.LatencyMsThreshold ?? 0,
             CertExpireDaysThresholdsJson = dto.Policy.CertExpireDaysThresholdsJson,
             ChannelIdsJson = dto.Policy.ChannelIdsJson
         }).ExecuteCommandAsync();
@@ -185,7 +185,7 @@ public class MonitorService : IMonitorService
                 FailThreshold = dto.Policy.FailThreshold,
                 SuccessCodeRule = dto.Policy.SuccessCodeRule,
                 ContentContains = dto.Policy.ContentContains,
-                LatencyMsThreshold = dto.Policy.LatencyMsThreshold,
+                LatencyMsThreshold = dto.Policy.LatencyMsThreshold ?? 0,
                 CertExpireDaysThresholdsJson = dto.Policy.CertExpireDaysThresholdsJson,
                 ChannelIdsJson = dto.Policy.ChannelIdsJson
             })

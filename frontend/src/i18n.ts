@@ -37,7 +37,8 @@ const messages = {
       title: '登录 OpsMonitor',
       userName: '用户名',
       password: '密码',
-      submit: '登录'
+      submit: '登录',
+      invalidResponse: '登录响应无效，请重试'
     },
     dashboard: {
       title: '总览',
@@ -165,7 +166,8 @@ const messages = {
       title: 'Sign In to OpsMonitor',
       userName: 'User Name',
       password: 'Password',
-      submit: 'Sign In'
+      submit: 'Sign In',
+      invalidResponse: 'Invalid login response. Please try again.'
     },
     dashboard: {
       title: 'Dashboard',

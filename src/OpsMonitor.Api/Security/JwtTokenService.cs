@@ -26,7 +26,8 @@ public class JwtTokenService : IJwtTokenService
     {
         var now = DateTime.UtcNow;
         var expires = now.AddMinutes(_options.ExpiresMinutes);
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.SigningKey));
+        var normalizedSigningKey = _options.SigningKey.PadRight(32, '0')[..32];
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(normalizedSigningKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new List<Claim>

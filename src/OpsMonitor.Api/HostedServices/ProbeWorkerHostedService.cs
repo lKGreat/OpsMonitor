@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using OpsMonitor.Api.Domain;
 using OpsMonitor.Api.Services;
 using SqlSugar;
@@ -8,21 +9,18 @@ public class ProbeWorkerHostedService : BackgroundService
 {
     private readonly ISqlSugarClient _db;
     private readonly IProbeDispatchQueue _queue;
-    private readonly IProbeService _probeService;
-    private readonly IAlertEngineService _alertEngineService;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<ProbeWorkerHostedService> _logger;
 
     public ProbeWorkerHostedService(
         ISqlSugarClient db,
         IProbeDispatchQueue queue,
-        IProbeService probeService,
-        IAlertEngineService alertEngineService,
+        IServiceScopeFactory scopeFactory,
         ILogger<ProbeWorkerHostedService> logger)
     {
         _db = db;
         _queue = queue;
-        _probeService = probeService;
-        _alertEngineService = alertEngineService;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -44,6 +42,10 @@ public class ProbeWorkerHostedService : BackgroundService
 
     private async Task HandleAsync(long monitorId, CancellationToken ct)
     {
+        using var scope = _scopeFactory.CreateScope();
+        var probeService = scope.ServiceProvider.GetRequiredService<IProbeService>();
+        var alertEngineService = scope.ServiceProvider.GetRequiredService<IAlertEngineService>();
+
         var monitor = await _db.Queryable<MonMonitor>().InSingleAsync(monitorId);
         if (monitor is null || !monitor.IsEnabled)
         {
@@ -62,8 +64,8 @@ public class ProbeWorkerHostedService : BackgroundService
         for (var attempt = 0; attempt <= retries; attempt++)
         {
             finalOutcome = monitor.Type == MonitorType.Cert
-                ? await _probeService.RunCertProbeAsync(target, policy, ct)
-                : await _probeService.RunLinkProbeAsync(target, policy, ct);
+                ? await probeService.RunCertProbeAsync(target, policy, ct)
+                : await probeService.RunLinkProbeAsync(target, policy, ct);
 
             if (finalOutcome.IsSuccess || attempt == retries)
             {
@@ -95,6 +97,6 @@ public class ProbeWorkerHostedService : BackgroundService
         };
         result.Id = await _db.Insertable(result).ExecuteReturnIdentityAsync();
 
-        await _alertEngineService.ProcessAsync(monitor, policy, result, ct);
+        await alertEngineService.ProcessAsync(monitor, policy, result, ct);
     }
 }

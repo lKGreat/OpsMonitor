@@ -36,9 +36,21 @@ async function submit() {
   loading.value = true;
   error.value = '';
   try {
-    const response = await apiPost<{ accessToken: string; expiresAt: string; user: any }>('/api/auth/login', form);
-    authStore.token = response.accessToken;
-    authStore.user = response.user;
+    const response = await apiPost<{
+      accessToken?: string;
+      AccessToken?: string;
+      user?: any;
+      User?: any;
+    }>('/api/auth/login', form);
+
+    const accessToken = response.accessToken ?? response.AccessToken ?? '';
+    const user = response.user ?? response.User ?? null;
+    if (!accessToken || !user) {
+      throw new Error(t('login.invalidResponse'));
+    }
+
+    authStore.token = accessToken;
+    authStore.user = user;
     router.push('/dashboard');
   } catch (e: any) {
     error.value = e.message;

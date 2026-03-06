@@ -61,7 +61,8 @@ public class UserService : IUserService
             IsEnabled = true,
             RequirePasswordChange = false,
             CreatedAt = now,
-            UpdatedAt = now
+            UpdatedAt = now,
+            LastLoginAt = now
         }).ExecuteReturnIdentityAsync();
 
         return id;

@@ -27,6 +27,7 @@ public class SysUser
     public DateTime CreatedAt { get; set; }
     [SugarColumn(IsNullable = false)]
     public DateTime UpdatedAt { get; set; }
+    [SugarColumn(IsNullable = true)]
     public DateTime? LastLoginAt { get; set; }
 }
 
@@ -110,6 +111,7 @@ public class MonPolicy
     public string SuccessCodeRule { get; set; } = "200-399";
     [SugarColumn(Length = 200, IsNullable = true)]
     public string? ContentContains { get; set; }
+    [SugarColumn(IsNullable = true)]
     public int? LatencyMsThreshold { get; set; }
     [SugarColumn(ColumnDataType = "TEXT", IsNullable = true)]
     public string? CertExpireDaysThresholdsJson { get; set; }
