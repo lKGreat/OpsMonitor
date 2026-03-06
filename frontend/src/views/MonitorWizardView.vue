@@ -1,52 +1,52 @@
 <template>
   <div class="stack">
-    <h2>创建监控项</h2>
+    <h2>{{ t('monitorWizard.title') }}</h2>
     <div class="card stack">
-      <div class="muted">Step {{ step }} / 5</div>
+      <div class="muted">{{ t('monitorWizard.step', { step, total: totalSteps }) }}</div>
 
       <div v-if="step === 1" class="stack">
-        <label>名称 <input v-model="form.name" /></label>
-        <label>类型
+        <label>{{ t('monitorWizard.name') }} <input v-model="form.name" /></label>
+        <label>{{ t('monitorWizard.type') }}
           <select v-model="form.type">
             <option value="LINK">LINK</option>
             <option value="CERT">CERT</option>
           </select>
         </label>
-        <label>分组 <input v-model="form.groupName" /></label>
+        <label>{{ t('monitorWizard.group') }} <input v-model="form.groupName" /></label>
       </div>
 
       <div v-else-if="step === 2" class="stack">
-        <label>URL/域名 <input v-model="form.target.urlOrHost" placeholder="https://api.example.com/health 或 example.com" /></label>
-        <label>端口 <input v-model.number="form.target.port" type="number" /></label>
-        <label>Path <input v-model="form.target.path" /></label>
+        <label>{{ t('monitorWizard.target') }} <input v-model="form.target.urlOrHost" :placeholder="t('monitorWizard.targetPlaceholder')" /></label>
+        <label>{{ t('monitorWizard.port') }} <input v-model.number="form.target.port" type="number" /></label>
+        <label>{{ t('monitorWizard.path') }} <input v-model="form.target.path" /></label>
       </div>
 
       <div v-else-if="step === 3" class="stack">
-        <label>频率(秒) <input v-model.number="form.policy.intervalSec" type="number" /></label>
-        <label>超时(ms) <input v-model.number="form.policy.timeoutMs" type="number" /></label>
-        <label>重试次数 <input v-model.number="form.policy.retryCount" type="number" /></label>
-        <label v-if="form.type === 'LINK'">成功码规则 <input v-model="form.policy.successCodeRule" /></label>
+        <label>{{ t('monitorWizard.intervalSec') }} <input v-model.number="form.policy.intervalSec" type="number" /></label>
+        <label>{{ t('monitorWizard.timeoutMs') }} <input v-model.number="form.policy.timeoutMs" type="number" /></label>
+        <label>{{ t('monitorWizard.retryCount') }} <input v-model.number="form.policy.retryCount" type="number" /></label>
+        <label v-if="form.type === 'LINK'">{{ t('monitorWizard.successCodeRule') }} <input v-model="form.policy.successCodeRule" /></label>
       </div>
 
       <div v-else-if="step === 4" class="stack">
-        <label v-if="form.type === 'LINK'">连续失败阈值
+        <label v-if="form.type === 'LINK'">{{ t('monitorWizard.failThreshold') }}
           <input v-model.number="form.policy.failThreshold" type="number" />
         </label>
-        <label v-else>证书阈值JSON
+        <label v-else>{{ t('monitorWizard.certThresholdJson') }}
           <input v-model="form.policy.certExpireDaysThresholdsJson" />
         </label>
       </div>
 
       <div v-else class="stack">
-        <label>通知渠道 ID 列表(JSON，如 [1,2])
+        <label>{{ t('monitorWizard.channelIdsJson') }}
           <input v-model="form.policy.channelIdsJson" />
         </label>
       </div>
 
       <div class="row">
-        <button v-if="step > 1" @click="step--">上一步</button>
-        <button v-if="step < 5" @click="step++">下一步</button>
-        <button v-if="step === 5" @click="submit">创建</button>
+        <button v-if="step > 1" @click="step--">{{ t('common.previous') }}</button>
+        <button v-if="step < totalSteps" @click="step++">{{ t('common.next') }}</button>
+        <button v-if="step === totalSteps" @click="submit">{{ t('common.create') }}</button>
       </div>
       <p v-if="error" class="error">{{ error }}</p>
     </div>
@@ -56,11 +56,14 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { apiPost } from '../api';
 
 const router = useRouter();
 const step = ref(1);
+const totalSteps = 5;
 const error = ref('');
+const { t } = useI18n();
 const form = reactive({
   name: '',
   type: 'LINK',

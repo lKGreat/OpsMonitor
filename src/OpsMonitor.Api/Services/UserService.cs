@@ -1,5 +1,6 @@
 using OpsMonitor.Api.Contracts;
 using OpsMonitor.Api.Domain;
+using OpsMonitor.Api.Localization;
 using OpsMonitor.Api.Security;
 using SqlSugar;
 
@@ -33,17 +34,17 @@ public class UserService : IUserService
     {
         if (string.IsNullOrWhiteSpace(request.UserName) || string.IsNullOrWhiteSpace(request.Password))
         {
-            throw new ArgumentException("UserName and Password are required.");
+            throw new ApiException(ErrorCodes.User.CredentialsRequired);
         }
         if (request.Role is not (UserRole.Admin or UserRole.User))
         {
-            throw new ArgumentException("Role must be Admin or User.");
+            throw new ApiException(ErrorCodes.User.RoleInvalid);
         }
 
         var existing = await _db.Queryable<SysUser>().AnyAsync(x => x.UserName == request.UserName);
         if (existing)
         {
-            throw new ArgumentException("UserName already exists.");
+            throw new ApiException(ErrorCodes.User.UserNameExists);
         }
 
         var now = DateTime.UtcNow;
@@ -74,7 +75,7 @@ public class UserService : IUserService
         }
         if (request.Role is not (UserRole.Admin or UserRole.User))
         {
-            throw new ArgumentException("Role must be Admin or User.");
+            throw new ApiException(ErrorCodes.User.RoleInvalid);
         }
 
         user.DisplayName = request.DisplayName?.Trim() ?? user.DisplayName;

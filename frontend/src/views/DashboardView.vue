@@ -1,21 +1,21 @@
 <template>
   <div class="stack">
-    <h2>Dashboard</h2>
+    <h2>{{ t('dashboard.title') }}</h2>
     <div class="row">
       <div class="card">
-        <div class="muted">监控总数</div>
+        <div class="muted">{{ t('dashboard.totalMonitors') }}</div>
         <div>{{ summary.totalMonitors }}</div>
       </div>
       <div class="card">
-        <div class="muted">启用监控</div>
+        <div class="muted">{{ t('dashboard.enabledMonitors') }}</div>
         <div>{{ summary.enabledMonitors }}</div>
       </div>
       <div class="card">
-        <div class="muted">当前告警</div>
+        <div class="muted">{{ t('dashboard.firingAlerts') }}</div>
         <div>{{ summary.firingAlerts }}</div>
       </div>
       <div class="card">
-        <div class="muted">今日恢复</div>
+        <div class="muted">{{ t('dashboard.resolvedToday') }}</div>
         <div>{{ summary.resolvedToday }}</div>
       </div>
     </div>
@@ -24,8 +24,10 @@
 
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { apiGet } from '../api';
 
+const { t } = useI18n();
 const summary = reactive({
   totalMonitors: 0,
   enabledMonitors: 0,

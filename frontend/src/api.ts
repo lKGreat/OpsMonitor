@@ -1,4 +1,5 @@
 import { authStore, logout } from './auth';
+import { getCurrentLocale } from './i18n';
 
 const jsonHeaders: Record<string, string> = {
   'Content-Type': 'application/json'
@@ -18,6 +19,7 @@ export async function apiPut<T>(url: string, body?: unknown): Promise<T> {
 
 async function request<T>(url: string, init: RequestInit): Promise<T> {
   const headers: Record<string, string> = { ...jsonHeaders };
+  headers['Accept-Language'] = getCurrentLocale();
   if (authStore.token) {
     headers.Authorization = `Bearer ${authStore.token}`;
   }
@@ -30,7 +32,8 @@ async function request<T>(url: string, init: RequestInit): Promise<T> {
   }
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `Request failed: ${response.status}`);
+    const parsed = tryParseApiError(text);
+    throw new Error(parsed?.message || text || `Request failed: ${response.status}`);
   }
 
   if (response.status === 204) {
@@ -43,4 +46,17 @@ async function request<T>(url: string, init: RequestInit): Promise<T> {
   }
 
   return JSON.parse(responseText) as T;
+}
+
+function tryParseApiError(text: string): { code?: string; message?: string } | null {
+  if (!text.trim()) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(text) as { code?: string; message?: string };
+    return parsed && typeof parsed === 'object' ? parsed : null;
+  } catch {
+    return null;
+  }
 }

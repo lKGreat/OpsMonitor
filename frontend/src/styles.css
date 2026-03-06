@@ -63,6 +63,28 @@ a {
   gap: 8px;
 }
 
+.locale-control {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.locale-control select {
+  min-width: 120px;
+}
+
+.locale-floating {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 8px;
+  z-index: 20;
+}
+
 .content {
   flex: 1;
   padding: 20px;

@@ -1,27 +1,27 @@
 <template>
   <div class="stack">
     <div class="row">
-      <h2>告警中心</h2>
+      <h2>{{ t('alerts.title') }}</h2>
       <select v-model="state" @change="load">
-        <option value="">ALL</option>
-        <option value="FIRING">FIRING</option>
-        <option value="RESOLVED">RESOLVED</option>
+        <option value="">{{ t('common.all') }}</option>
+        <option value="FIRING">{{ t('value.stateFiring') }}</option>
+        <option value="RESOLVED">{{ t('value.stateResolved') }}</option>
       </select>
-      <button @click="load">刷新</button>
+      <button @click="load">{{ t('common.refresh') }}</button>
     </div>
     <div class="card">
       <table class="table">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Monitor</th>
-            <th>Rule</th>
-            <th>Severity</th>
-            <th>State</th>
-            <th>Message</th>
-            <th>First</th>
-            <th>Last</th>
-            <th>Action</th>
+            <th>{{ t('alerts.monitor') }}</th>
+            <th>{{ t('alerts.rule') }}</th>
+            <th>{{ t('alerts.severity') }}</th>
+            <th>{{ t('alerts.state') }}</th>
+            <th>{{ t('alerts.message') }}</th>
+            <th>{{ t('alerts.first') }}</th>
+            <th>{{ t('alerts.last') }}</th>
+            <th>{{ t('alerts.action') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -30,11 +30,11 @@
             <td>{{ a.monitorId }}</td>
             <td>{{ a.ruleType }}</td>
             <td>{{ a.severity }}</td>
-            <td>{{ a.state }}</td>
+            <td>{{ stateLabel(a.state) }}</td>
             <td>{{ a.message }}</td>
             <td>{{ a.firstTriggeredAt }}</td>
             <td>{{ a.lastTriggeredAt }}</td>
-            <td><button @click="ack(a.id)">Ack</button></td>
+            <td><button @click="ack(a.id)">{{ t('alerts.ack') }}</button></td>
           </tr>
         </tbody>
       </table>
@@ -44,10 +44,12 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { apiGet, apiPost } from '../api';
 
 const state = ref('');
 const alerts = ref<any[]>([]);
+const { t } = useI18n();
 
 async function load() {
   const query = state.value ? `?state=${state.value}` : '';
@@ -57,6 +59,18 @@ async function load() {
 async function ack(id: number) {
   await apiPost(`/api/alerts/${id}/ack`, { note: '' });
   await load();
+}
+
+function stateLabel(value: string): string {
+  if (value === 'FIRING') {
+    return t('value.stateFiring');
+  }
+
+  if (value === 'RESOLVED') {
+    return t('value.stateResolved');
+  }
+
+  return value;
 }
 
 onMounted(load);

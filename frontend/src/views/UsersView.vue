@@ -1,17 +1,17 @@
 <template>
   <div class="stack">
-    <h2>用户管理</h2>
+    <h2>{{ t('users.title') }}</h2>
     <div class="card stack">
-      <h3>创建用户</h3>
+      <h3>{{ t('users.createUser') }}</h3>
       <div class="row">
-        <input v-model="form.userName" placeholder="用户名" />
-        <input v-model="form.displayName" placeholder="显示名" />
+        <input v-model="form.userName" :placeholder="t('users.userName')" />
+        <input v-model="form.displayName" :placeholder="t('users.displayName')" />
         <select v-model="form.role">
-          <option value="User">User</option>
-          <option value="Admin">Admin</option>
+          <option value="User">{{ t('value.roleUser') }}</option>
+          <option value="Admin">{{ t('value.roleAdmin') }}</option>
         </select>
-        <input v-model="form.password" type="password" placeholder="密码" />
-        <button @click="create">创建</button>
+        <input v-model="form.password" type="password" :placeholder="t('users.password')" />
+        <button @click="create">{{ t('common.create') }}</button>
       </div>
       <p class="error" v-if="error">{{ error }}</p>
     </div>
@@ -20,11 +20,11 @@
       <table class="table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>UserName</th>
-            <th>DisplayName</th>
-            <th>Role</th>
-            <th>RequirePasswordChange</th>
+            <th>{{ t('users.id') }}</th>
+            <th>{{ t('users.userName') }}</th>
+            <th>{{ t('users.displayName') }}</th>
+            <th>{{ t('users.role') }}</th>
+            <th>{{ t('users.requirePasswordChange') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -32,8 +32,8 @@
             <td>{{ u.id }}</td>
             <td>{{ u.userName }}</td>
             <td>{{ u.displayName }}</td>
-            <td>{{ u.role }}</td>
-            <td>{{ u.requirePasswordChange ? 'YES' : 'NO' }}</td>
+            <td>{{ u.role === 'Admin' ? t('value.roleAdmin') : t('value.roleUser') }}</td>
+            <td>{{ u.requirePasswordChange ? t('common.yes') : t('common.no') }}</td>
           </tr>
         </tbody>
       </table>
@@ -43,10 +43,12 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { apiGet, apiPost } from '../api';
 
 const users = ref<any[]>([]);
 const error = ref('');
+const { t } = useI18n();
 const form = reactive({
   userName: '',
   displayName: '',

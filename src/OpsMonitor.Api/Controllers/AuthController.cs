@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpsMonitor.Api.Contracts;
+using OpsMonitor.Api.Localization;
 using OpsMonitor.Api.Security;
 using OpsMonitor.Api.Services;
 
@@ -24,7 +25,7 @@ public class AuthController : ControllerBase
         var response = await _authService.LoginAsync(request, ct);
         if (response is null)
         {
-            return Unauthorized(new { message = "Invalid credentials or account locked." });
+            return this.ApiError(StatusCodes.Status401Unauthorized, ErrorCodes.Auth.InvalidCredentials);
         }
         return Ok(response);
     }
@@ -43,7 +44,7 @@ public class AuthController : ControllerBase
         var me = await _authService.GetMeAsync(User.GetUserId(), ct);
         if (me is null)
         {
-            return Unauthorized();
+            return this.ApiError(StatusCodes.Status401Unauthorized, ErrorCodes.Auth.Unauthorized);
         }
         return Ok(me);
     }

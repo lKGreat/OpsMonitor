@@ -1,6 +1,7 @@
 using System.Text.Json;
 using OpsMonitor.Api.Contracts;
 using OpsMonitor.Api.Domain;
+using OpsMonitor.Api.Localization;
 using SqlSugar;
 
 namespace OpsMonitor.Api.Services;
@@ -234,27 +235,27 @@ public class MonitorService : IMonitorService
     {
         if (string.IsNullOrWhiteSpace(dto.Name))
         {
-            throw new ArgumentException("Name is required.");
+            throw new ApiException(ErrorCodes.Monitor.NameRequired);
         }
         if (dto.Type is not (MonitorType.Link or MonitorType.Cert))
         {
-            throw new ArgumentException("Type must be LINK or CERT.");
+            throw new ApiException(ErrorCodes.Monitor.TypeInvalid);
         }
         if (string.IsNullOrWhiteSpace(dto.Target.UrlOrHost))
         {
-            throw new ArgumentException("Target UrlOrHost is required.");
+            throw new ApiException(ErrorCodes.Monitor.TargetRequired);
         }
         if (dto.Policy.IntervalSec < 10)
         {
-            throw new ArgumentException("IntervalSec must be >= 10.");
+            throw new ApiException(ErrorCodes.Monitor.IntervalTooSmall);
         }
         if (dto.Policy.TimeoutMs < 500)
         {
-            throw new ArgumentException("TimeoutMs must be >= 500.");
+            throw new ApiException(ErrorCodes.Monitor.TimeoutTooSmall);
         }
         if (dto.Policy.FailThreshold < 1)
         {
-            throw new ArgumentException("FailThreshold must be >= 1.");
+            throw new ApiException(ErrorCodes.Monitor.FailThresholdTooSmall);
         }
     }
 
@@ -264,7 +265,14 @@ public class MonitorService : IMonitorService
         {
             return null;
         }
-        _ = JsonDocument.Parse(value);
+        try
+        {
+            _ = JsonDocument.Parse(value);
+        }
+        catch (JsonException)
+        {
+            throw new ApiException(ErrorCodes.Monitor.InvalidJson);
+        }
         return value;
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpsMonitor.Api.Contracts;
+using OpsMonitor.Api.Localization;
 using OpsMonitor.Api.Services;
 
 namespace OpsMonitor.Api.Controllers;
@@ -36,6 +37,8 @@ public class ChannelsController : ControllerBase
     public async Task<ActionResult> Update(long id, [FromBody] ChannelUpsertDto dto, CancellationToken ct)
     {
         var ok = await _channelService.UpdateAsync(id, dto, ct);
-        return ok ? Ok() : NotFound();
+        return ok
+            ? Ok()
+            : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.Channel.NotFound);
     }
 }

@@ -53,7 +53,7 @@ public class AlertEngineService : IAlertEngineService
                 latestResult,
                 RuleType.LinkDown,
                 SeverityLevel.P1,
-                $"Link down for {latest.Count} consecutive checks.",
+                BuildLinkDownMessage(latest.Count),
                 dedupKey,
                 notifyOnSeverityUpgradeOnly: true,
                 ct);
@@ -86,7 +86,7 @@ public class AlertEngineService : IAlertEngineService
                 latestResult,
                 RuleType.CertInvalid,
                 AlertRuleEvaluator.ResolveCertSeverity(daysLeft, invalid: true),
-                latestResult.ErrorMessage ?? "Certificate invalid.",
+                BuildCertInvalidMessage(latestResult.ErrorMessage),
                 invalidKey,
                 notifyOnSeverityUpgradeOnly: true,
                 ct);
@@ -104,7 +104,7 @@ public class AlertEngineService : IAlertEngineService
                 latestResult,
                 RuleType.CertExpire,
                 severity,
-                $"Certificate expires in {daysLeft} day(s).",
+                BuildCertExpireMessage(daysLeft),
                 expireKey,
                 notifyOnSeverityUpgradeOnly: true,
                 ct);
@@ -180,4 +180,24 @@ public class AlertEngineService : IAlertEngineService
     }
 
     private static string BuildDedupKey(long monitorId, string ruleType) => $"{monitorId}:{ruleType}";
+
+    private static string BuildLinkDownMessage(int count)
+    {
+        return $"链路连续 {count} 次探测失败。 / Link down for {count} consecutive checks.";
+    }
+
+    private static string BuildCertInvalidMessage(string? detail)
+    {
+        if (string.IsNullOrWhiteSpace(detail))
+        {
+            return "证书无效。 / Certificate invalid.";
+        }
+
+        return $"证书无效：{detail} / Certificate invalid: {detail}";
+    }
+
+    private static string BuildCertExpireMessage(int daysLeft)
+    {
+        return $"证书将在 {daysLeft} 天后过期。 / Certificate expires in {daysLeft} day(s).";
+    }
 }

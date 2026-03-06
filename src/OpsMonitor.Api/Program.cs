@@ -1,9 +1,12 @@
+using System.Text.Json;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using OpsMonitor.Api.HostedServices;
 using OpsMonitor.Api.Infrastructure;
+using OpsMonitor.Api.Localization;
 using OpsMonitor.Api.Middleware;
 using OpsMonitor.Api.Options;
 using OpsMonitor.Api.Security;
@@ -16,6 +19,8 @@ builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<SecurityOptions>(builder.Configuration.GetSection("Security"));
 builder.Services.Configure<SeedOptions>(builder.Configuration.GetSection("Seed"));
 builder.Services.Configure<MonitoringOptions>(builder.Configuration.GetSection("Monitoring"));
+builder.Services.AddSingleton<ITextLocalizer, TextLocalizer>();
+builder.Services.AddSingleton<IApiErrorFactory, ApiErrorFactory>();
 
 builder.Services.AddSingleton<ISqlSugarClient>(_ =>
 {
@@ -48,6 +53,36 @@ builder.Services
             IssuerSigningKey = new SymmetricSecurityKey(key),
             ClockSkew = TimeSpan.FromSeconds(30)
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = async context =>
+            {
+                if (context.Response.HasStarted)
+                {
+                    return;
+                }
+
+                context.HandleResponse();
+                var errorFactory = context.HttpContext.RequestServices.GetRequiredService<IApiErrorFactory>();
+                var payload = errorFactory.Create(context.HttpContext, ErrorCodes.Auth.Unauthorized);
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
+            },
+            OnForbidden = async context =>
+            {
+                if (context.Response.HasStarted)
+                {
+                    return;
+                }
+
+                var errorFactory = context.HttpContext.RequestServices.GetRequiredService<IApiErrorFactory>();
+                var payload = errorFactory.Create(context.HttpContext, ErrorCodes.Auth.Forbidden);
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
@@ -72,7 +107,17 @@ builder.Services.AddHostedService<SchedulerHostedService>();
 builder.Services.AddHostedService<ProbeWorkerHostedService>();
 builder.Services.AddHostedService<RetentionHostedService>();
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errorFactory = context.HttpContext.RequestServices.GetRequiredService<IApiErrorFactory>();
+            var payload = errorFactory.Create(context.HttpContext, ErrorCodes.Common.InvalidRequest);
+            return new BadRequestObjectResult(payload);
+        };
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

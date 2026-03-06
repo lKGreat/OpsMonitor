@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpsMonitor.Api.Contracts;
+using OpsMonitor.Api.Localization;
 using OpsMonitor.Api.Security;
 using OpsMonitor.Api.Services;
 
@@ -28,6 +29,8 @@ public class AlertsController : ControllerBase
     public async Task<ActionResult> Ack(long id, [FromBody] AckAlertRequest request, CancellationToken ct)
     {
         var ok = await _alertQueryService.AckAsync(id, User.GetUserName(), ct);
-        return ok ? Ok() : NotFound();
+        return ok
+            ? Ok()
+            : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.Alert.NotFound);
     }
 }

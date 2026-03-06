@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpsMonitor.Api.Contracts;
+using OpsMonitor.Api.Localization;
 using OpsMonitor.Api.Security;
 using OpsMonitor.Api.Services;
 
@@ -35,26 +36,34 @@ public class MonitorsController : ControllerBase
     public async Task<ActionResult<MonitorDetailDto>> GetById(long id, CancellationToken ct)
     {
         var row = await _monitorService.GetAsync(id, ct);
-        return row is null ? NotFound() : Ok(row);
+        return row is null
+            ? this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.Monitor.NotFound)
+            : Ok(row);
     }
 
     [HttpPut("{id:long}")]
     public async Task<ActionResult> Update(long id, [FromBody] MonitorUpsertDto dto, CancellationToken ct)
     {
         var ok = await _monitorService.UpdateAsync(id, dto, ct);
-        return ok ? Ok() : NotFound();
+        return ok
+            ? Ok()
+            : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.Monitor.NotFound);
     }
 
     [HttpPost("{id:long}/enable")]
     public async Task<ActionResult> Enable(long id, CancellationToken ct)
     {
-        return await _monitorService.SetEnabledAsync(id, true, ct) ? Ok() : NotFound();
+        return await _monitorService.SetEnabledAsync(id, true, ct)
+            ? Ok()
+            : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.Monitor.NotFound);
     }
 
     [HttpPost("{id:long}/disable")]
     public async Task<ActionResult> Disable(long id, CancellationToken ct)
     {
-        return await _monitorService.SetEnabledAsync(id, false, ct) ? Ok() : NotFound();
+        return await _monitorService.SetEnabledAsync(id, false, ct)
+            ? Ok()
+            : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.Monitor.NotFound);
     }
 
     [HttpGet("{id:long}/results")]

@@ -1,13 +1,13 @@
 <template>
   <div class="stack">
-    <h2>通知渠道</h2>
+    <h2>{{ t('channels.title') }}</h2>
     <div class="card stack">
-      <h3>新增钉钉渠道</h3>
+      <h3>{{ t('channels.createDingTalk') }}</h3>
       <div class="row">
-        <input v-model="form.name" placeholder="渠道名" />
-        <input v-model="form.config.webhook" placeholder="Webhook" />
-        <input v-model="form.config.secret" placeholder="Secret (optional)" />
-        <button @click="create">创建</button>
+        <input v-model="form.name" :placeholder="t('channels.channelName')" />
+        <input v-model="form.config.webhook" :placeholder="t('channels.webhook')" />
+        <input v-model="form.config.secret" :placeholder="t('channels.secret')" />
+        <button @click="create">{{ t('common.create') }}</button>
       </div>
       <p class="error" v-if="error">{{ error }}</p>
     </div>
@@ -15,12 +15,12 @@
       <table class="table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>名称</th>
-            <th>类型</th>
-            <th>Webhook</th>
-            <th>Secret</th>
-            <th>启用</th>
+            <th>{{ t('channels.id') }}</th>
+            <th>{{ t('channels.name') }}</th>
+            <th>{{ t('channels.type') }}</th>
+            <th>{{ t('channels.webhook') }}</th>
+            <th>{{ t('channels.secret') }}</th>
+            <th>{{ t('channels.enabled') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -29,8 +29,8 @@
             <td>{{ c.name }}</td>
             <td>{{ c.type }}</td>
             <td>{{ c.webhookMasked }}</td>
-            <td>{{ c.hasSecret ? 'YES' : 'NO' }}</td>
-            <td>{{ c.isEnabled ? 'YES' : 'NO' }}</td>
+            <td>{{ c.hasSecret ? t('common.yes') : t('common.no') }}</td>
+            <td>{{ c.isEnabled ? t('common.yes') : t('common.no') }}</td>
           </tr>
         </tbody>
       </table>
@@ -40,10 +40,12 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { apiGet, apiPost } from '../api';
 
 const channels = ref<any[]>([]);
 const error = ref('');
+const { t } = useI18n();
 const form = reactive({
   type: 'DINGTALK',
   name: '',

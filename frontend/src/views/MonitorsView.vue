@@ -1,21 +1,21 @@
 <template>
   <div class="stack">
     <div class="row">
-      <h2>Monitors</h2>
-      <RouterLink to="/monitors/new"><button>新建监控</button></RouterLink>
-      <button @click="load">刷新</button>
+      <h2>{{ t('monitors.title') }}</h2>
+      <RouterLink to="/monitors/new"><button>{{ t('monitors.newMonitor') }}</button></RouterLink>
+      <button @click="load">{{ t('common.refresh') }}</button>
     </div>
     <div class="card">
       <table class="table">
         <thead>
           <tr>
-            <th>ID</th>
-            <th>名称</th>
-            <th>类型</th>
-            <th>分组</th>
-            <th>状态</th>
-            <th>最近探测</th>
-            <th>动作</th>
+            <th>{{ t('monitors.id') }}</th>
+            <th>{{ t('monitors.name') }}</th>
+            <th>{{ t('monitors.type') }}</th>
+            <th>{{ t('monitors.group') }}</th>
+            <th>{{ t('monitors.status') }}</th>
+            <th>{{ t('monitors.lastCheck') }}</th>
+            <th>{{ t('monitors.actions') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -23,12 +23,12 @@
             <td>{{ m.id }}</td>
             <td><RouterLink :to="`/monitors/${m.id}`">{{ m.name }}</RouterLink></td>
             <td>{{ m.type }}</td>
-            <td>{{ m.groupName || '-' }}</td>
-            <td>{{ m.lastIsSuccess === null ? '-' : (m.lastIsSuccess ? 'OK' : 'FAIL') }}</td>
-            <td>{{ m.lastCheckedAt || '-' }}</td>
+            <td>{{ m.groupName || t('common.unknown') }}</td>
+            <td>{{ monitorStatusLabel(m.lastIsSuccess) }}</td>
+            <td>{{ m.lastCheckedAt || t('common.unknown') }}</td>
             <td class="row">
-              <button v-if="!m.isEnabled" @click="toggle(m.id, true)">启用</button>
-              <button v-else class="danger" @click="toggle(m.id, false)">停用</button>
+              <button v-if="!m.isEnabled" @click="toggle(m.id, true)">{{ t('monitors.enable') }}</button>
+              <button v-else class="danger" @click="toggle(m.id, false)">{{ t('monitors.disable') }}</button>
             </td>
           </tr>
         </tbody>
@@ -40,6 +40,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { apiGet, apiPost } from '../api';
 
 type MonitorItem = {
@@ -53,6 +54,7 @@ type MonitorItem = {
 };
 
 const monitors = ref<MonitorItem[]>([]);
+const { t } = useI18n();
 
 async function load() {
   monitors.value = await apiGet<MonitorItem[]>('/api/monitors');
@@ -61,6 +63,14 @@ async function load() {
 async function toggle(id: number, enable: boolean) {
   await apiPost(`/api/monitors/${id}/${enable ? 'enable' : 'disable'}`);
   await load();
+}
+
+function monitorStatusLabel(status: boolean | null): string {
+  if (status === null) {
+    return t('common.unknown');
+  }
+
+  return status ? t('common.ok') : t('common.fail');
 }
 
 onMounted(load);

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpsMonitor.Api.Contracts;
+using OpsMonitor.Api.Localization;
 using OpsMonitor.Api.Services;
 
 namespace OpsMonitor.Api.Controllers;
@@ -34,6 +35,8 @@ public class UsersController : ControllerBase
     public async Task<ActionResult> Update(long id, [FromBody] UpdateUserRequest request, CancellationToken ct)
     {
         var ok = await _userService.UpdateAsync(id, request, ct);
-        return ok ? Ok() : NotFound();
+        return ok
+            ? Ok()
+            : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.User.NotFound);
     }
 }

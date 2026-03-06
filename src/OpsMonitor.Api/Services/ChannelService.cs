@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Net.Http.Json;
 using OpsMonitor.Api.Contracts;
 using OpsMonitor.Api.Domain;
+using OpsMonitor.Api.Localization;
 using OpsMonitor.Api.Security;
 using SqlSugar;
 
@@ -90,15 +91,15 @@ public class ChannelService : IChannelService
     {
         if (dto.Type != ChannelType.DingTalk)
         {
-            throw new ArgumentException("Only DINGTALK is supported.");
+            throw new ApiException(ErrorCodes.Channel.TypeUnsupported);
         }
         if (string.IsNullOrWhiteSpace(dto.Name))
         {
-            throw new ArgumentException("Channel name is required.");
+            throw new ApiException(ErrorCodes.Channel.NameRequired);
         }
         if (string.IsNullOrWhiteSpace(dto.Config.Webhook))
         {
-            throw new ArgumentException("Webhook is required.");
+            throw new ApiException(ErrorCodes.Channel.WebhookRequired);
         }
     }
 

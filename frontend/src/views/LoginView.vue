@@ -1,16 +1,16 @@
 <template>
   <div class="card" style="max-width: 420px; margin: 48px auto;">
-    <h2>登录 OpsMonitor</h2>
+    <h2>{{ t('login.title') }}</h2>
     <div class="stack">
       <label>
-        用户名
+        {{ t('login.userName') }}
         <input v-model="form.userName" />
       </label>
       <label>
-        密码
+        {{ t('login.password') }}
         <input v-model="form.password" type="password" />
       </label>
-      <button :disabled="loading" @click="submit">登录</button>
+      <button :disabled="loading" @click="submit">{{ t('login.submit') }}</button>
       <p class="error" v-if="error">{{ error }}</p>
     </div>
   </div>
@@ -19,10 +19,12 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { apiPost } from '../api';
 import { authStore } from '../auth';
 
 const router = useRouter();
+const { t } = useI18n();
 const loading = ref(false);
 const error = ref('');
 const form = reactive({
