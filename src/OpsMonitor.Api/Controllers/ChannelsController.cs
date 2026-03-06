@@ -41,4 +41,14 @@ public class ChannelsController : ControllerBase
             ? Ok()
             : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.Channel.NotFound);
     }
+
+    [HttpDelete("{id:long}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult> Delete(long id, CancellationToken ct)
+    {
+        var ok = await _channelService.DeleteAsync(id, ct);
+        return ok
+            ? Ok()
+            : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.Channel.NotFound);
+    }
 }

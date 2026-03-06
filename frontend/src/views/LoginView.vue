@@ -4,13 +4,13 @@
     <div class="stack">
       <label>
         {{ t('login.userName') }}
-        <input v-model="form.userName" />
+        <input data-testid="login-username" v-model="form.userName" />
       </label>
       <label>
         {{ t('login.password') }}
-        <input v-model="form.password" type="password" />
+        <input data-testid="login-password" v-model="form.password" type="password" />
       </label>
-      <button :disabled="loading" @click="submit">{{ t('login.submit') }}</button>
+      <button data-testid="login-submit" :disabled="loading" @click="submit">{{ t('login.submit') }}</button>
       <p class="error" v-if="error">{{ error }}</p>
     </div>
   </div>

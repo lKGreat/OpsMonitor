@@ -15,6 +15,7 @@ public interface IChannelService
     Task<List<ChannelDto>> GetAllAsync(CancellationToken ct = default);
     Task<long> CreateAsync(ChannelUpsertDto dto, CancellationToken ct = default);
     Task<bool> UpdateAsync(long id, ChannelUpsertDto dto, CancellationToken ct = default);
+    Task<bool> DeleteAsync(long id, CancellationToken ct = default);
     Task<NotifyChannel?> GetByIdAsync(long id, CancellationToken ct = default);
     DingTalkChannelConfigDto ReadDingTalkConfig(NotifyChannel channel);
 }
@@ -74,6 +75,14 @@ public class ChannelService : IChannelService
         row.IsEnabled = dto.IsEnabled;
         await _db.Updateable(row).ExecuteCommandAsync();
         return true;
+    }
+
+    public async Task<bool> DeleteAsync(long id, CancellationToken ct = default)
+    {
+        var changed = await _db.Deleteable<NotifyChannel>()
+            .Where(x => x.Id == id)
+            .ExecuteCommandAsync();
+        return changed > 0;
     }
 
     public Task<NotifyChannel?> GetByIdAsync(long id, CancellationToken ct = default)

@@ -11,6 +11,7 @@ public interface IUserService
     Task<List<UserInfoDto>> GetAllAsync(CancellationToken ct = default);
     Task<long> CreateAsync(CreateUserRequest request, CancellationToken ct = default);
     Task<bool> UpdateAsync(long id, UpdateUserRequest request, CancellationToken ct = default);
+    Task<bool> DeleteAsync(long id, CancellationToken ct = default);
 }
 
 public class UserService : IUserService
@@ -92,5 +93,13 @@ public class UserService : IUserService
         }
         await _db.Updateable(user).ExecuteCommandAsync();
         return true;
+    }
+
+    public async Task<bool> DeleteAsync(long id, CancellationToken ct = default)
+    {
+        var changed = await _db.Deleteable<SysUser>()
+            .Where(x => x.Id == id)
+            .ExecuteCommandAsync();
+        return changed > 0;
     }
 }

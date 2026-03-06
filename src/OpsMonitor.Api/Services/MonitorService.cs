@@ -12,6 +12,7 @@ public interface IMonitorService
     Task<MonitorDetailDto?> GetAsync(long id, CancellationToken ct = default);
     Task<long> CreateAsync(long userId, MonitorUpsertDto dto, CancellationToken ct = default);
     Task<bool> UpdateAsync(long id, MonitorUpsertDto dto, CancellationToken ct = default);
+    Task<bool> DeleteAsync(long id, CancellationToken ct = default);
     Task<bool> SetEnabledAsync(long id, bool enabled, CancellationToken ct = default);
     Task<List<CheckResultDto>> GetResultsAsync(long monitorId, int days, CancellationToken ct = default);
 }
@@ -190,6 +191,57 @@ public class MonitorService : IMonitorService
             })
             .Where(x => x.MonitorId == id)
             .ExecuteCommandAsync();
+
+        return true;
+    }
+
+    public async Task<bool> DeleteAsync(long id, CancellationToken ct = default)
+    {
+        var exists = await _db.Queryable<MonMonitor>().AnyAsync(x => x.Id == id);
+        if (!exists)
+        {
+            return false;
+        }
+
+        var tranResult = await _db.Ado.UseTranAsync(async () =>
+        {
+            var alertIds = await _db.Queryable<AlertEvent>()
+                .Where(x => x.MonitorId == id)
+                .Select(x => x.Id)
+                .ToListAsync();
+
+            if (alertIds.Count > 0)
+            {
+                await _db.Deleteable<NotifyLog>()
+                    .Where(x => alertIds.Contains(x.AlertEventId))
+                    .ExecuteCommandAsync();
+            }
+
+            await _db.Deleteable<AlertEvent>()
+                .Where(x => x.MonitorId == id)
+                .ExecuteCommandAsync();
+
+            await _db.Deleteable<MonCheckResult>()
+                .Where(x => x.MonitorId == id)
+                .ExecuteCommandAsync();
+
+            await _db.Deleteable<MonPolicy>()
+                .Where(x => x.MonitorId == id)
+                .ExecuteCommandAsync();
+
+            await _db.Deleteable<MonTarget>()
+                .Where(x => x.MonitorId == id)
+                .ExecuteCommandAsync();
+
+            await _db.Deleteable<MonMonitor>()
+                .Where(x => x.Id == id)
+                .ExecuteCommandAsync();
+        });
+
+        if (!tranResult.IsSuccess)
+        {
+            throw tranResult.ErrorException ?? new Exception("Failed to delete monitor.");
+        }
 
         return true;
     }

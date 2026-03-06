@@ -20,6 +20,10 @@ const messages = {
     common: {
       refresh: '刷新',
       create: '创建',
+      delete: '删除',
+      edit: '编辑',
+      save: '保存',
+      cancel: '取消',
       previous: '上一步',
       next: '下一步',
       yes: '是',
@@ -108,7 +112,8 @@ const messages = {
       id: 'ID',
       name: '名称',
       type: '类型',
-      enabled: '启用'
+      enabled: '启用',
+      webhookRequiredForUpdate: '编辑渠道时需要填写完整 Webhook'
     },
     users: {
       title: '用户管理',
@@ -118,7 +123,8 @@ const messages = {
       role: '角色',
       password: '密码',
       id: 'ID',
-      requirePasswordChange: '需改密'
+      requirePasswordChange: '需改密',
+      newPasswordOptional: '新密码（可选）'
     },
     value: {
       stateFiring: '触发中',
@@ -142,6 +148,10 @@ const messages = {
     common: {
       refresh: 'Refresh',
       create: 'Create',
+      delete: 'Delete',
+      edit: 'Edit',
+      save: 'Save',
+      cancel: 'Cancel',
       previous: 'Previous',
       next: 'Next',
       yes: 'YES',
@@ -230,7 +240,8 @@ const messages = {
       id: 'ID',
       name: 'Name',
       type: 'Type',
-      enabled: 'Enabled'
+      enabled: 'Enabled',
+      webhookRequiredForUpdate: 'A full webhook is required to update a channel'
     },
     users: {
       title: 'Users',
@@ -240,7 +251,8 @@ const messages = {
       role: 'Role',
       password: 'Password',
       id: 'ID',
-      requirePasswordChange: 'Require Password Change'
+      requirePasswordChange: 'Require Password Change',
+      newPasswordOptional: 'New Password (optional)'
     },
     value: {
       stateFiring: 'FIRING',
@@ -278,7 +290,6 @@ if (typeof document !== 'undefined') {
 }
 
 export const i18n = createI18n({
-  legacy: false,
   locale: initialLocale,
   fallbackLocale: 'zh-CN',
   messages

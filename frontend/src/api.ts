@@ -17,6 +17,10 @@ export async function apiPut<T>(url: string, body?: unknown): Promise<T> {
   return request<T>(url, { method: 'PUT', body: body ? JSON.stringify(body) : undefined });
 }
 
+export async function apiDelete<T>(url: string): Promise<T> {
+  return request<T>(url, { method: 'DELETE' });
+}
+
 async function request<T>(url: string, init: RequestInit): Promise<T> {
   const headers: Record<string, string> = { ...jsonHeaders };
   headers['Accept-Language'] = getCurrentLocale();

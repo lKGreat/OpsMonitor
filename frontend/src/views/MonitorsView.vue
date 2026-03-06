@@ -2,8 +2,8 @@
   <div class="stack">
     <div class="row">
       <h2>{{ t('monitors.title') }}</h2>
-      <RouterLink to="/monitors/new"><button>{{ t('monitors.newMonitor') }}</button></RouterLink>
-      <button @click="load">{{ t('common.refresh') }}</button>
+      <RouterLink to="/monitors/new"><button data-testid="monitor-create-entry">{{ t('monitors.newMonitor') }}</button></RouterLink>
+      <button data-testid="monitor-refresh" @click="load">{{ t('common.refresh') }}</button>
     </div>
     <div class="card">
       <table class="table">
@@ -21,7 +21,7 @@
         <tbody>
           <tr v-for="m in monitors" :key="m.id">
             <td>{{ m.id }}</td>
-            <td><RouterLink :to="`/monitors/${m.id}`">{{ m.name }}</RouterLink></td>
+            <td><RouterLink :to="`/monitors/${m.id}`" :data-testid="`monitor-link-${m.id}`">{{ m.name }}</RouterLink></td>
             <td>{{ m.type }}</td>
             <td>{{ m.groupName || t('common.unknown') }}</td>
             <td>{{ monitorStatusLabel(m.lastIsSuccess) }}</td>
@@ -29,6 +29,7 @@
             <td class="row">
               <button v-if="!m.isEnabled" @click="toggle(m.id, true)">{{ t('monitors.enable') }}</button>
               <button v-else class="danger" @click="toggle(m.id, false)">{{ t('monitors.disable') }}</button>
+              <button class="danger" :data-testid="`monitor-delete-${m.id}`" @click="remove(m.id)">{{ t('common.delete') }}</button>
             </td>
           </tr>
         </tbody>
@@ -41,7 +42,7 @@
 import { onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { apiGet, apiPost } from '../api';
+import { apiDelete, apiGet, apiPost } from '../api';
 
 type MonitorItem = {
   id: number;
@@ -62,6 +63,11 @@ async function load() {
 
 async function toggle(id: number, enable: boolean) {
   await apiPost(`/api/monitors/${id}/${enable ? 'enable' : 'disable'}`);
+  await load();
+}
+
+async function remove(id: number) {
+  await apiDelete(`/api/monitors/${id}`);
   await load();
 }
 

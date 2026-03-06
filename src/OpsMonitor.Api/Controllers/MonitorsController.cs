@@ -50,6 +50,15 @@ public class MonitorsController : ControllerBase
             : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.Monitor.NotFound);
     }
 
+    [HttpDelete("{id:long}")]
+    public async Task<ActionResult> Delete(long id, CancellationToken ct)
+    {
+        var ok = await _monitorService.DeleteAsync(id, ct);
+        return ok
+            ? Ok()
+            : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.Monitor.NotFound);
+    }
+
     [HttpPost("{id:long}/enable")]
     public async Task<ActionResult> Enable(long id, CancellationToken ct)
     {

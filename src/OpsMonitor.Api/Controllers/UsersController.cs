@@ -39,4 +39,13 @@ public class UsersController : ControllerBase
             ? Ok()
             : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.User.NotFound);
     }
+
+    [HttpDelete("{id:long}")]
+    public async Task<ActionResult> Delete(long id, CancellationToken ct)
+    {
+        var ok = await _userService.DeleteAsync(id, ct);
+        return ok
+            ? Ok()
+            : this.ApiError(StatusCodes.Status404NotFound, ErrorCodes.User.NotFound);
+    }
 }
