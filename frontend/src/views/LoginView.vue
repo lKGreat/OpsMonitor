@@ -21,7 +21,7 @@ import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { apiPost } from '../api';
-import { authStore } from '../auth';
+import { setAuth } from '../auth';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -49,8 +49,7 @@ async function submit() {
       throw new Error(t('login.invalidResponse'));
     }
 
-    authStore.token = accessToken;
-    authStore.user = user;
+    setAuth(accessToken, user);
     router.push('/dashboard');
   } catch (e: any) {
     error.value = e.message;

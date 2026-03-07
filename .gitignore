@@ -1,11 +1,108 @@
+# ===== .NET =====
 bin/
 obj/
-.vs/
 *.user
 *.suo
 *.db
 *.db-shm
 *.db-wal
+.vs/
+*.rsuser
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.ilk
+*.meta
+*.nupkg
+*.snupkg
+**/[Dd]ebug/
+**/[Rr]elease/
+**/x64/
+**/x86/
+**/[Ww][Ii][Nn]32/
+**/[Aa][Rr][Mm]/
+**/[Aa][Rr][Mm]64/
+**/bld/
+**/[Oo]bj/
+**/[Ll]og/
+**/[Ll]ogs/
+TestResults/
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+*.vspscc
+*.vssscc
+.builds
+*.pidb
+*.svclog
+*.scc
+
+# ===== ASP.NET Core =====
+# 本地开发配置（常含敏感信息）
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+
+# ===== Node / Frontend =====
 node_modules/
 dist/
 coverage/
+.npm
+*.tsbuildinfo
+*.local
+
+# Vite
+frontend/dist/
+
+# 前端构建产物（若在 CI 中构建可忽略；若需提交部署则移除此段）
+# src/OpsMonitor.Api/wwwroot/assets/
+
+# ===== Playwright =====
+test-results/
+playwright-report/
+playwright/.cache/
+.blob-storage/
+
+# ===== IDE =====
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# ===== OS =====
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ===== Logs & Temp =====
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# ===== Environment & Secrets =====
+.env
+.env.local
+.env.*.local
+*.pem
+secrets.json
+
+# ===== Codex (optional, remove if you want to commit) =====
+.codex/
