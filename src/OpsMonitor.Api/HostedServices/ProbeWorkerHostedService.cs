@@ -95,7 +95,25 @@ public class ProbeWorkerHostedService : BackgroundService
             CertFingerprint = finalOutcome.CertFingerprint,
             RawJson = finalOutcome.RawJson
         };
-        result.Id = await _db.Insertable(result).ExecuteReturnIdentityAsync();
+
+        var persisted = new MonCheckResult
+        {
+            MonitorId = result.MonitorId,
+            CheckedAt = result.CheckedAt,
+            IsSuccess = result.IsSuccess,
+            DurationMs = result.DurationMs,
+            ErrorType = result.ErrorType,
+            ErrorMessage = result.ErrorMessage,
+            HttpStatusCode = result.HttpStatusCode ?? 0,
+            CertNotAfter = result.CertNotAfter ?? DateTime.UnixEpoch,
+            CertDaysLeft = result.CertDaysLeft ?? int.MinValue,
+            CertIssuer = result.CertIssuer,
+            CertSubject = result.CertSubject,
+            CertFingerprint = result.CertFingerprint,
+            RawJson = result.RawJson
+        };
+
+        result.Id = await _db.Insertable(persisted).ExecuteReturnIdentityAsync();
 
         await alertEngineService.ProcessAsync(monitor, policy, result, ct);
     }

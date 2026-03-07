@@ -69,7 +69,8 @@ public class DbBootstrapper : IDbBootstrapper
             IsEnabled = true,
             RequirePasswordChange = true,
             CreatedAt = now,
-            UpdatedAt = now
+            UpdatedAt = now,
+            LastLoginAt = now
         }).ExecuteCommandAsync();
     }
 }

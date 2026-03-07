@@ -10,6 +10,7 @@ public interface IAlertEngineService
 
 public class AlertEngineService : IAlertEngineService
 {
+    private static readonly DateTime LegacyNullDate = DateTime.UnixEpoch;
     private readonly ISqlSugarClient _db;
     private readonly INotificationService _notificationService;
 
@@ -138,8 +139,11 @@ public class AlertEngineService : IAlertEngineService
                 State = AlertState.Firing,
                 FirstTriggeredAt = latestResult.CheckedAt,
                 LastTriggeredAt = latestResult.CheckedAt,
+                ResolvedAt = LegacyNullDate,
                 Message = message,
-                DedupKey = dedupKey
+                DedupKey = dedupKey,
+                SilencedUntil = LegacyNullDate,
+                AckedAt = LegacyNullDate
             };
             created.Id = await _db.Insertable(created).ExecuteReturnIdentityAsync();
             await _notificationService.NotifyAsync(created, monitor, latestResult, ct);
@@ -151,6 +155,9 @@ public class AlertEngineService : IAlertEngineService
         existing.LastTriggeredAt = latestResult.CheckedAt;
         existing.Message = message;
         existing.Severity = severity;
+        existing.ResolvedAt ??= LegacyNullDate;
+        existing.SilencedUntil ??= LegacyNullDate;
+        existing.AckedAt ??= LegacyNullDate;
         await _db.Updateable(existing).ExecuteCommandAsync();
         if (shouldNotify)
         {
@@ -167,6 +174,8 @@ public class AlertEngineService : IAlertEngineService
         firing.State = AlertState.Resolved;
         firing.ResolvedAt = latestResult.CheckedAt;
         firing.LastTriggeredAt = latestResult.CheckedAt;
+        firing.SilencedUntil ??= LegacyNullDate;
+        firing.AckedAt ??= LegacyNullDate;
         await _db.Updateable(firing).ExecuteCommandAsync();
         await _notificationService.NotifyAsync(firing, monitor, latestResult, ct);
     }

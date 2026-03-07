@@ -145,8 +145,7 @@ public class ProbeService : IProbeService
         var result = new ProbeOutcome();
         var phase = new Dictionary<string, object>();
         var sw = Stopwatch.StartNew();
-        var host = target.UrlOrHost.Trim();
-        var port = target.Port <= 0 ? 443 : target.Port;
+        var (host, port) = ResolveCertEndpoint(target);
         var timeout = TimeSpan.FromMilliseconds(policy.TimeoutMs);
 
         try
@@ -237,6 +236,26 @@ public class ProbeService : IProbeService
         {
             return Fail(result, sw, Domain.ErrorType.Cert, ex.Message, phase);
         }
+    }
+
+    private static (string Host, int Port) ResolveCertEndpoint(MonTarget target)
+    {
+        var raw = target.UrlOrHost.Trim();
+        var fallbackPort = target.Port <= 0 ? 443 : target.Port;
+
+        if (Uri.TryCreate(raw, UriKind.Absolute, out var absoluteUri))
+        {
+            var parsedPort = absoluteUri.IsDefaultPort ? fallbackPort : absoluteUri.Port;
+            return (absoluteUri.Host, parsedPort);
+        }
+
+        if (Uri.TryCreate($"https://{raw}", UriKind.Absolute, out var normalizedUri))
+        {
+            var parsedPort = normalizedUri.IsDefaultPort ? fallbackPort : normalizedUri.Port;
+            return (normalizedUri.Host, parsedPort);
+        }
+
+        return (raw, fallbackPort);
     }
 
     private static ProbeOutcome Fail(ProbeOutcome result, Stopwatch sw, string errorType, string message, Dictionary<string, object> phase)

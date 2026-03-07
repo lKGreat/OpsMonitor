@@ -12,6 +12,7 @@ public interface IAlertQueryService
 
 public class AlertQueryService : IAlertQueryService
 {
+    private static readonly DateTime LegacyNullDate = DateTime.UnixEpoch;
     private readonly ISqlSugarClient _db;
 
     public AlertQueryService(ISqlSugarClient db)
@@ -36,9 +37,9 @@ public class AlertQueryService : IAlertQueryService
             x.State,
             x.FirstTriggeredAt,
             x.LastTriggeredAt,
-            x.ResolvedAt,
+            NormalizeLegacyDate(x.ResolvedAt),
             x.Message,
-            x.AckedAt,
+            NormalizeLegacyDate(x.AckedAt),
             x.AckedBy)).ToList();
     }
 
@@ -53,5 +54,10 @@ public class AlertQueryService : IAlertQueryService
         eventRow.AckedBy = userName;
         await _db.Updateable(eventRow).ExecuteCommandAsync();
         return true;
+    }
+
+    private static DateTime? NormalizeLegacyDate(DateTime? value)
+    {
+        return value.HasValue && value.Value <= LegacyNullDate ? null : value;
     }
 }

@@ -12,6 +12,7 @@ public interface INotificationService
 
 public class NotificationService : INotificationService
 {
+    private static readonly DateTime LegacyNullDate = DateTime.UnixEpoch;
     private readonly ISqlSugarClient _db;
     private readonly IChannelService _channelService;
     private readonly IDingTalkNotifier _dingTalkNotifier;
@@ -125,12 +126,13 @@ public class NotificationService : INotificationService
             $"- Duration: {result.DurationMs} ms"
         };
 
-        if (alert.ResolvedAt.HasValue)
+        var resolvedAt = NormalizeLegacyDate(alert.ResolvedAt);
+        if (resolvedAt.HasValue)
         {
-            var duration = alert.ResolvedAt.Value - alert.FirstTriggeredAt;
-            lines.Add($"- 恢复时间: {alert.ResolvedAt:yyyy-MM-dd HH:mm:ss} UTC");
+            var duration = resolvedAt.Value - alert.FirstTriggeredAt;
+            lines.Add($"- 恢复时间: {resolvedAt:yyyy-MM-dd HH:mm:ss} UTC");
             lines.Add($"- 故障持续: {duration.TotalMinutes:F1} 分钟");
-            lines.Add($"- Resolved at: {alert.ResolvedAt:yyyy-MM-dd HH:mm:ss} UTC");
+            lines.Add($"- Resolved at: {resolvedAt:yyyy-MM-dd HH:mm:ss} UTC");
             lines.Add($"- Outage duration: {duration.TotalMinutes:F1} minutes");
         }
 
@@ -143,5 +145,10 @@ public class NotificationService : INotificationService
         }
 
         return string.Join("\n", lines);
+    }
+
+    private static DateTime? NormalizeLegacyDate(DateTime? value)
+    {
+        return value.HasValue && value.Value <= LegacyNullDate ? null : value;
     }
 }

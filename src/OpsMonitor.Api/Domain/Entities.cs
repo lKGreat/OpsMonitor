@@ -136,8 +136,11 @@ public class MonCheckResult
     public string ErrorType { get; set; } = Domain.ErrorType.None;
     [SugarColumn(Length = 500, IsNullable = true)]
     public string? ErrorMessage { get; set; }
+    [SugarColumn(IsNullable = true)]
     public int? HttpStatusCode { get; set; }
+    [SugarColumn(IsNullable = true)]
     public DateTime? CertNotAfter { get; set; }
+    [SugarColumn(IsNullable = true)]
     public int? CertDaysLeft { get; set; }
     [SugarColumn(Length = 200, IsNullable = true)]
     public string? CertIssuer { get; set; }
@@ -166,12 +169,15 @@ public class AlertEvent
     public DateTime FirstTriggeredAt { get; set; }
     [SugarColumn(IsNullable = false)]
     public DateTime LastTriggeredAt { get; set; }
+    [SugarColumn(IsNullable = true)]
     public DateTime? ResolvedAt { get; set; }
     [SugarColumn(Length = 500, IsNullable = false)]
     public string Message { get; set; } = string.Empty;
     [SugarColumn(Length = 128, IsNullable = false)]
     public string DedupKey { get; set; } = string.Empty;
+    [SugarColumn(IsNullable = true)]
     public DateTime? SilencedUntil { get; set; }
+    [SugarColumn(IsNullable = true)]
     public DateTime? AckedAt { get; set; }
     [SugarColumn(Length = 64, IsNullable = true)]
     public string? AckedBy { get; set; }

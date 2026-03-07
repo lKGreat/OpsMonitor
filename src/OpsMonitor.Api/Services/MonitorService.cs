@@ -275,9 +275,9 @@ public class MonitorService : IMonitorService
             x.DurationMs,
             x.ErrorType,
             x.ErrorMessage,
-            x.HttpStatusCode,
-            x.CertNotAfter,
-            x.CertDaysLeft,
+            x.HttpStatusCode > 0 ? x.HttpStatusCode : null,
+            x.CertNotAfter > DateTime.UnixEpoch ? x.CertNotAfter : null,
+            x.CertDaysLeft == int.MinValue ? null : x.CertDaysLeft,
             x.CertIssuer,
             x.CertSubject,
             x.CertFingerprint)).ToList();
