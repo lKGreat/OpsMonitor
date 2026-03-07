@@ -85,9 +85,10 @@ public class ChannelService : IChannelService
         return changed > 0;
     }
 
-    public Task<NotifyChannel?> GetByIdAsync(long id, CancellationToken ct = default)
+    public async Task<NotifyChannel?> GetByIdAsync(long id, CancellationToken ct = default)
     {
-        return _db.Queryable<NotifyChannel>().InSingleAsync(id);
+        var channel = await _db.Queryable<NotifyChannel>().InSingleAsync(id);
+        return channel;
     }
 
     public DingTalkChannelConfigDto ReadDingTalkConfig(NotifyChannel channel)

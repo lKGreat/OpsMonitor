@@ -171,12 +171,13 @@ public class AlertEngineService : IAlertEngineService
         await _notificationService.NotifyAsync(firing, monitor, latestResult, ct);
     }
 
-    private Task<AlertEvent?> GetFiringAsync(string dedupKey)
+    private async Task<AlertEvent?> GetFiringAsync(string dedupKey)
     {
-        return _db.Queryable<AlertEvent>()
+        var alert = await _db.Queryable<AlertEvent>()
             .Where(x => x.DedupKey == dedupKey && x.State == AlertState.Firing)
             .OrderByDescending(x => x.Id)
             .FirstAsync();
+        return alert;
     }
 
     private static string BuildDedupKey(long monitorId, string ruleType) => $"{monitorId}:{ruleType}";
